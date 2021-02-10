@@ -1,0 +1,10 @@
+name: ses_lgi_q45
+title:
+username:
+account: lindsay-results-summaries
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3612366
+bundleId: 4204059
+url: https://lindsay-results-summaries.shinyapps.io/ses_lgi_q45/
+when: 1612935342.10736

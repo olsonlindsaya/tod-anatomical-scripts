@@ -1,13 +1,9 @@
 ---
-title: "SES_Anat_Analyses Q>=4"
+title: "ses_LGI_results_q45"
 author: "Lindsay Olson"
-date: "2/2/2021"
-output: 
-  html_document:
-    toc: TRUE
-#output:
- # pdf_document:
-  #    extra_dependencies: ["float"]
+date: "2/9/2021"
+output: html_document
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
@@ -29,8 +25,8 @@ library(sjPlot)
 library(sjmisc)
 library(sjlabelled)
 #library(stargazer)
-#library(shiny)
-#library(rsconnect)
+library(shiny)
+library(rsconnect)
 
 
 options(digits = 4, scipen = 999)
@@ -408,4 +404,6 @@ Primary language other than English associated with lower left hemisphere pars o
 
 ## Sex Results
 Sex predicts lh pars opercularis LGI, controlling for TBV, and age
+
+
 
