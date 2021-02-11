@@ -1,4 +1,4 @@
-# Iterate Scatter Plots in R, for RMArkdown
+# Iterate Scatter Plots in R, for RMarkdown
 
 ### Scatter Plots of Bivariate Associations, ASD and TD together 
 
