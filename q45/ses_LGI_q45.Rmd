@@ -1,7 +1,7 @@
 ---
 title: "SES_Anat_Analyses"
 author: "Lindsay Olson"
-date: "2/10/2021"
+date: "2/11/2021"
 output: 
   html_document:
     toc: TRUE
@@ -399,7 +399,7 @@ corrplot(SES_corr_TD$r, method = "color",  type = "lower", outline = T, order="o
 #dev.off()
 ```
 
-```{r, data-readin Q4 RegModels, include=FALSE, echo=FALSE, warning=FALSE}
+```{r, data-readin Q4 RegModels, include=FALSE, echo=FALSE, eval = FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -423,7 +423,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 # LGI Results, compare results for data quality Q>=4 vs. data quality Q>=3, Regression Models: INR
 
-```{r, regTables, echo = FALSE, include=FALSE, results= 'asis'}
+```{r, regTables, echo = FALSE, include=FALSE, eval = FALSE, results= 'asis'}
 
 ### Iterate through reg models. Can suppress output in html file or include it if desired. 
 
@@ -473,7 +473,7 @@ summaries <- lapply(my_lms, summary)
 
 
 
-```{r, data-readin-Q3 RegModels, include=FALSE, echo=FALSE, warning=FALSE}
+```{r, data-readin-Q3 RegModels, include=FALSE, echo=FALSE, eval = FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -496,7 +496,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 ```
 
 
-```{r, regTablesQ3, echo = FALSE, include=FALSE, results= 'asis'}
+```{r, regTablesQ3, echo = FALSE, include=FALSE, eval = FALSE, results= 'asis'}
 set.seed(1)
 
 # number of columns in the Lung and Blood data.frames. 22,000 for you?
@@ -672,7 +672,7 @@ cat("\n")
 
 ```
 
-Income to needs ratio predicts rh_parsopercularis_lgi, controlling for age and TBV (dx, sex, and age not sig. predictors)
+Income to needs ratio predicts **rh_parsopercularis_lgi**, controlling for age and TBV (dx, sex, and age not sig. predictors)
 
 
 
@@ -682,7 +682,7 @@ Income to needs ratio predicts rh_parsopercularis_lgi, controlling for age and T
 
 ## Neighborhood Advantage Results Q>=4
 
-```{r, data-readin Q4 SES1 Results, include=FALSE, echo=FALSE, warning=FALSE}
+```{r, data-readin Q4 SES1 Results, include=FALSE, echo=FALSE, eval = FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -704,7 +704,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 ```
   
-```{r, SES1 Models Q4, echo=FALSE, include=FALSE, results= 'asis'}
+```{r, SES1 Models Q4, echo=FALSE, include=FALSE, eval = FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -739,9 +739,9 @@ summaries <- lapply(my_lms, summary)
 
 ```
 
-Neighborhood Advantage not a significant predictor of LGI when controlling for TBV and dx for Q>=4.
+Neighborhood Advantage **not** a significant predictor of LGI when controlling for TBV and dx for Q>=4.
 
-```{r, data-readin-Q3 RegModels SES1, include=FALSE, echo=FALSE, warning=FALSE}
+```{r, data-readin-Q3 RegModels SES1, include=FALSE, echo=FALSE, eval = FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -765,7 +765,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 ## Neighborhood Advantage Results Q>3
   
-```{r, SES1 Models Q3, echo=FALSE, include=FALSE, results= 'asis'}
+```{r, SES1 Models Q3, echo=FALSE, include=FALSE, eval = FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -800,7 +800,7 @@ summaries <- lapply(my_lms, summary)
 
 ```
 
-Neighborhood Advantage not a significant predictor of LGI when controlling for TBV and dx for data Q>=3.
+Neighborhood Advantage **not** a significant predictor of LGI when controlling for TBV and dx for data Q>=3.
 
 
 
@@ -830,7 +830,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 ```
   
-```{r, SES2 Models Q4, echo=FALSE, include=TRUE, results= 'asis'}
+```{r, SES2 Models Q4, echo=FALSE, include=FALSE, eval=FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -865,9 +865,62 @@ summaries <- lapply(my_lms, summary)
 
 ```
 
-Neighborhood Disdvantage not a significant predictor of LGI when controlling for TBV and dx.
+Neighborhood Disdvantage *is* a significant predictor of **lh-middle temporal LGI** and **rh-transverse temporal** when controlling for TBV and age for Q>=4. There is *not* a significant SES2xDx Interaction (dx main effect also not significant). This indicates that higher *disadvantage* is associated with higher LGI (primarily in the TD group). This finding is in a different direction than those with INR. 
 
-```{r, data-readin-Q3 RegModels SES2, include=FALSE, echo=FALSE, warning=FALSE}
+
+```{r, SES2 Plots and tables Q4, echo = FALSE, include=TRUE, results= 'asis'}
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD
+anat_data$dxCoded <-unclass(anat_data$dxCoded)
+ 
+anat_data$sexCoded <- as.factor(anat_data$SEX) # 1 = Female, 2 = Male
+anat_data$sexCoded <-unclass(anat_data$sexCoded)
+
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    
+lm2 <- lm(lh_middletemporal_lgi ~  SES2 + TBV + V1.Age, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES2", "TBV", "Age"),
+  dv.labels = paste(outcomeVars[[3]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=SES2, y=lh_middletemporal_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Middle Temporal LGI') +
+    xlab('Neighborhood Disadvantage') +
+    theme_classic()
+
+```
+
+
+## Neighborhood Disadvantage Results Q>=3
+
+
+
+
+```{r, data-readin-Q3 RegModels SES2, include=TRUE, echo=FALSE, eval= TRUE, warning=FALSE}
 
 # Read in dataset
 
@@ -889,9 +942,9 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 ```
 
-## Neighborhood Disadvantage Results Q>=3
-  
-```{r, SES2 Models Q3, echo=FALSE, include=TRUE, results= 'asis'}
+
+
+```{r, SES2 Models Q3, echo=FALSE, include=TRUE, eval = FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -926,16 +979,53 @@ summaries <- lapply(my_lms, summary)
 
 ```
 
-Neighborhood Disadvantage not a significant predictor of LGI when controlling for TBV and dx for data q >=3.
+
+Neighborhood Disadvantage is *not* a significant predictor of LGI when controlling for TBV and dx for data q >=3.
+
+```{r, SES2 Plots and tables Q3, echo = FALSE, include=TRUE, results= 'asis'}
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    
+lm2 <- lm(lh_middletemporal_lgi ~  SES2 + TBV + V1.Age, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES2", "TBV", "Age"),
+  dv.labels = paste(outcomeVars[[3]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
 
 
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=SES2, y=lh_middletemporal_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Middle Temporal LGI') +
+    xlab('Neighborhood Disadvantage') +
+    theme_classic()
+
+```
 
 
-# LGI Results, compare restuls for data quality Q>=4 vs. data quality Q>=3, Regression Models MEL
+# LGI Results, compare results for data quality Q>=4 vs. data quality Q>=3, Regression Models MEL
 
-## MEL Results
+## MEL Results Q>=4
 
-```{r, data-readin Q4 MEL Results, include=FALSE, echo=FALSE, warning=FALSE}
+```{r, data-readin Q4 MEL Results, include=FALSE, echo=FALSE, eval = FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -958,7 +1048,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 ```
   
 
-```{r, MEL Models Q4, echo=FALSE, include=FALSE, results= 'asis'}
+```{r, MEL Models Q4, echo=FALSE, include=FALSE, eval = FALSE, results= 'asis'}
 set.seed(1)
 
 # number of columns in the Lung and Blood data.frames. 22,000 for you?
@@ -995,12 +1085,11 @@ summaries <- lapply(my_lms, summary)
 ```
 
 
-Maternal Education not a significant predictor of LGI when controlling for TBV and dx. 
-
-Although there is a trending (uncorrected p = 0.08) relationship between MEL and rh fusiform LGI.
+Maternal Education **not** a significant predictor of LGI when controlling for TBV and dx for data Q>=4. 
 
 
-```{r, data-readin-Q3 RegModels MEL, include=TRUE, echo=FALSE, warning=FALSE}
+
+```{r, data-readin-Q3 RegModels MEL, include=TRUE, echo=FALSE, eval = FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -1025,7 +1114,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 ## MEL Results Q>=3
 
-```{r, MEL Models Q3, echo=FALSE, include=FALSE, results= 'asis'}
+```{r, MEL Models Q3, echo=FALSE, include=FALSE, eval = FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -1061,15 +1150,15 @@ summaries <- lapply(my_lms, summary)
 ```
 
 
-Maternal Education not a significant predictor of LGI when controlling for TBV and dx. 
+Maternal Education **not** a significant predictor of LGI when controlling for TBV and dx for data Q>=3. 
 
 
 # LGI Results, compare restuls for data quality Q>=4 vs. data quality Q>=3, Regression Models ZipIncome
 
 
-## Zip-Income Results
+## Zip-Income Results, data Q>=4
 
-```{r, data-readin Q4 ZipIncome Results, include=FALSE, echo=FALSE, warning=FALSE}
+```{r, data-readin Q4 ZipIncome Results, include=FALSE, echo=FALSE, eval = FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -1091,7 +1180,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 ```
 
-```{r, ZipIncome Models, echo=FALSE, include=TRUE, results= 'asis'}
+```{r, ZipIncome Models, echo=FALSE, include=TRUE, eval=FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -1107,7 +1196,7 @@ anat_data$sexCoded <-unclass(anat_data$sexCoded)
 
 ## SES1 Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ anat_data$zipIncome + anat_data$TBV + anat_data$sexCoded)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ anat_data$zipIncome + anat_data$TBV + anat_data$V1.Age) # change the predictors manually
 
 
 summaries <- lapply(my_lms, summary)
@@ -1125,11 +1214,49 @@ summaries <- lapply(my_lms, summary)
 
 ```
 
+Zip-Income **is a significant predictor** when controlling for TBV. Removed Age and Dx from models since they were not significant. 
+```{r, ZipIncome Plots and tables Q4, echo = FALSE, include=TRUE, results= 'asis'}
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
 
-Zip-Income not a significant predictor when controlling for TBV and Dx. 
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    
+lm2 <- lm(lh_parsorbitalis_lgi ~  zipIncome + TBV + V1.Age, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Zip-Income", "TBV", "Age"),
+  dv.labels = paste(outcomeVars[[11]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
 
 
-```{r, data-readin-Q3 RegModels ZipIncome, include=TRUE, echo=FALSE, warning=FALSE}
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=zipIncome, y=lh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Orbitalis LGI') +
+    xlab('Zip-Income') +
+    theme_classic()
+
+```
+
+
+
+
+```{r, data-readin-Q3 RegModels ZipIncome, include=FALSE, echo=FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -1140,12 +1267,18 @@ rm(list=ls()) ## clear the workspace
 
 anat_data = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/SES_Anat_v2.csv')
 
+anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD
+anat_data$dxCoded <-unclass(anat_data$dxCoded)
+ 
+anat_data$sexCoded <- as.factor(anat_data$SEX) # 1 = Female, 2 = Male
+anat_data$sexCoded <-unclass(anat_data$sexCoded)
+
 ```
 
 
 ## Zip-Income Results Q>=3
 
-```{r, ZipIncome Models Q3, echo=FALSE, include=TRUE, results= 'asis'}
+```{r, ZipIncome Models Q3, echo=FALSE, include=TRUE, eval=FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -1180,7 +1313,47 @@ summaries <- lapply(my_lms, summary)
 ```
 
 
-Zip-Income not a significant predictor when controlling for TBV and Dx. 
+Zip-Income **is** a significant predictor of **lh-pars orbitals LGI**, when controlling for TBV and age, for Q>=3. 
+
+```{r, ZipIncome Plots and tables Q3, echo = FALSE, include=TRUE, results= 'asis'}
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+rm(lm2)
+    
+lm2 <- lm(lh_parsorbitalis_lgi ~  zipIncome + TBV + V1.Age, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Zip-Income", "TBV", "Age"),
+  dv.labels = paste(outcomeVars[[11]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=zipIncome, y=lh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Orbitalis LGI') +
+    xlab('Zip-Income') +
+    theme_classic()
+
+```
+
 
 # LGI Results, compare results for data quality Q>=4 vs. data quality Q>=3, Regression Models: Dx
 
@@ -1195,22 +1368,22 @@ rm(list=ls()) ## clear the workspace
 
 anat_data = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/SES_Anat_v2_q45.csv')
 
-```
-
-
-
-```{r, Dx Models Q4, echo=FALSE, include=FALSE, results= 'asis'}
-set.seed(1)
-
-n <- 14
-outcomes <- anat_data[,c(7:20)]
-outcomeVars = names(outcomes)
-
 anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD
 anat_data$dxCoded <-unclass(anat_data$dxCoded)
  
 anat_data$sexCoded <- as.factor(anat_data$SEX) # 1 = Female, 2 = Male
 anat_data$sexCoded <-unclass(anat_data$sexCoded)
+
+```
+
+
+
+```{r, Dx Models Q4, echo=FALSE, include=FALSE, eval=FALSE, results= 'asis'}
+set.seed(1)
+
+n <- 14
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
 
 
 ## SES1 Models
@@ -1233,14 +1406,80 @@ summaries <- lapply(my_lms, summary)
 
 ```
 ## Dx Results, Q>=4
-Diagnosis predicts Rh superior temporal and middle temporal LGI (REMOVE AGE AND SEX FROM THE MT LGI BC IT'S NOT SIGNIFICANT).
 
-REMOVE AGE FROM LH PARS OPERC MODEL AND RE-SPECIFY FOR DX EFFECT
-
-DX PREDICTS LH PARS TRIANGLULARIS (REMOVE AGE FROM THE MODEL, IT'S NOT SIGNIFICANT)
+Dx predicts **left hemisphere pars triangularis and right hemisphere middle temporal LGI**, when controlling for TBV, age, and sex (the latter were not sig. predictors or RH MTG LGI, so removed from the model). 
 
 
-```{r, data-readin-Q3 RegModels Dx, include=TRUE, echo=FALSE, warning=FALSE}
+```{r, Dx Plots and tables Q4, echo = FALSE, include=TRUE, eval=TRUE, results= 'asis'}
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+     lm2 <- lm(lh_parstriangularis_lgi ~  dxCoded + TBV + sexCoded, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "TBV", "Sex"),
+  dv.labels = paste(outcomeVars[[13]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=Dx, y=lh_parstriangularis_lgi, color=Dx)) + 
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Triangularis LGI') +
+    xlab('Diagnosis') +
+    theme_classic()
+    
+    lm2 <- lm(rh_middletemporal_lgi ~  dxCoded + TBV, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "TBV"),
+  dv.labels = paste(outcomeVars[[4]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=Dx, y=rh_middletemporal_lgi, color=Dx)) + 
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('RH Middle Temporal LGI') +
+    xlab('Diagnosis') +
+    theme_classic()
+    
+   
+    
+    
+
+```
+
+
+
+```{r, data-readin-Q3 RegModels Dx, include=FALSE, eval=FALSE, echo=FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -1255,7 +1494,7 @@ anat_data = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_T
 
 
 
-```{r, Dx Models Q3, echo=FALSE, include=TRUE, results= 'asis'}
+```{r, Dx Models Q3, echo=FALSE, include=FALSE, eval=FALSE, results= 'asis'}
 set.seed(1)
 
 n <- 14
@@ -1290,14 +1529,90 @@ summaries <- lapply(my_lms, summary)
 ```
 
 ## Dx Results, Q>=3
-Diagnosis predicts Rh superior temporal and middle temporal LGI. 
+Diagnosis not associated with LGI in the Q>=3 dataset (after removing SES variables from the model).
+
+```{r, Dx Plots and tables Q3, echo = FALSE, include=TRUE, eval=TRUE, results= 'asis'}
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+
+anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD
+anat_data$dxCoded <-unclass(anat_data$dxCoded)
+ 
+anat_data$sexCoded <- as.factor(anat_data$SEX) # 1 = Female, 2 = Male
+anat_data$sexCoded <-unclass(anat_data$sexCoded)
+
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+     lm2 <- lm(lh_parstriangularis_lgi ~  dxCoded + TBV + sexCoded, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "TBV", "Sex"),
+  dv.labels = paste(outcomeVars[[13]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=Dx, y=lh_parstriangularis_lgi, color=Dx)) + 
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Triangularis LGI') +
+    xlab('Diagnosis') +
+    theme_classic()
+    
+    lm2 <- lm(rh_middletemporal_lgi ~  dxCoded + TBV, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "TBV"),
+  dv.labels = paste(outcomeVars[[4]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(anat_data, aes(x=Dx, y=rh_middletemporal_lgi, color=Dx)) + 
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('RH Middle Temporal LGI') +
+    xlab('Diagnosis') +
+    theme_classic()
+    
+    
+
+```
+
 
 
 # LGI Results, compare results for data quality Q>=4 vs. data quality Q>=3, Regression Models: Sex/Gender
 
-## Sex Results, Q>=4
+## Sex/Gender Results, Q>=4
 
-```{r, data-readin-Q4 RegModels ZipIncome, include=TRUE, echo=FALSE, warning=FALSE}
+```{r, data-readin-Q4 RegModels Sex/Gender, include=TRUE, echo=FALSE, warning=FALSE}
 
 # Read in dataset
 
@@ -1309,23 +1624,146 @@ rm(list=ls()) ## clear the workspace
 anat_data = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/SES_Anat_v2_q45.csv')
 
 ```
-Sex predicts lh pars opercularis LGI, controlling for TBV, dx, and age
+Sex predicts **lh pars opercularis LGI**, controlling for TBV, dx, and age
 
-```{r, SexEffects, echo=FALSE, include=TRUE, results= 'asis'}
+```{r, Sex Models Q4, echo=FALSE, include=FALSE, results= 'asis'}
+set.seed(1)
 
+n <- 14
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD
+anat_data$dxCoded <-unclass(anat_data$dxCoded)
+ 
+anat_data$sexCoded <- as.factor(anat_data$SEX) # 1 = Female, 2 = Male
+anat_data$sexCoded <-unclass(anat_data$sexCoded)
+
+
+## SES1 Models
+# run n regressions
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ anat_data$sexCoded + anat_data$TBV + anat_data$V1.Age +anat_data$dxCoded)) # change the predictors manually
+
+
+summaries <- lapply(my_lms, summary)
+
+  for (i in seq_along(outcomeVars)) {
+   # cat('Linear regression results predicting', outcomeVars[[i]], '\n') 
+    cat(tab_model(my_lms[i], pred.labels = c("Intercept", "Sex", "TBV", "Age", "Dx"),
+  dv.labels = paste(outcomeVars[[i]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+    
+  }
+
+
+```
+
+
+```{r, SexEffectsQ4, echo=FALSE, include=TRUE, results= 'asis'}
+
+       rm(lm2)
+lm2 <- lm(lh_parsopercularis_lgi ~  sexCoded + dxCoded + V1.Age + TBV, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Sex", "Dx", "Age", "TBV"),
+  dv.labels = paste(outcomeVars[[9]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
 
 ggplot(anat_data, aes(x=SEX, y=lh_parsopercularis_lgi, color=SEX)) + 
   geom_boxplot() +
   theme(text = element_text(size = 20)) +
   scale_color_manual(values=c("purple","blue")) +
-  scale_fill_manual(values=c("purple","blue"))
+  scale_fill_manual(values=c("purple","blue")) +
+  ylab('LH Pars Opercularis LGI') +
+  xlab('Sex/Gender') +
+  theme_classic()
 ```
 
 
 ## Sex Results Q>=3
-Sex predicts lh pars opercularis LGI, controlling for TBV, dx,  and age
+Sex predicts **lh pars opercularis LGI**, controlling for TBV, dx,  and age
+
+```{r, data-readin-Q3 RegModels Sex, include=TRUE, echo=FALSE, warning=FALSE}
+
+# Read in dataset
+
+#LGI Data 
+rm(list=ls()) ## clear the workspace
+#dev.off() ## Clear the plots
+
+
+anat_data = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/SES_Anat_v2.csv')
+
+
+anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD
+anat_data$dxCoded <-unclass(anat_data$dxCoded)
+ 
+anat_data$sexCoded <- as.factor(anat_data$SEX) # 1 = Female, 2 = Male
+anat_data$sexCoded <-unclass(anat_data$sexCoded)
+
+```
 
 
 
+```{r, Sex Models Q3, echo=FALSE, include=FALSE, eval=FALSE, results= 'asis'}
+set.seed(1)
+
+n <- 14
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+
+anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD
+anat_data$dxCoded <-unclass(anat_data$dxCoded)
+ 
+anat_data$sexCoded <- as.factor(anat_data$SEX) # 1 = Female, 2 = Male
+anat_data$sexCoded <-unclass(anat_data$sexCoded)
+
+
+## SES1 Models
+# run n regressions
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ anat_data$sexCoded + anat_data$TBV + anat_data$V1.Age +anat_data$dxCoded)) # change the predictors manually
+
+
+summaries <- lapply(my_lms, summary)
+
+  for (i in seq_along(outcomeVars)) {
+   # cat('Linear regression results predicting', outcomeVars[[i]], '\n') 
+    cat(tab_model(my_lms[i], pred.labels = c("Intercept", "Sex", "TBV", "Age", "Dx"),
+  dv.labels = paste(outcomeVars[[i]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+    
+  }
+
+
+```
+
+
+
+```{r, SexEffectsQ3, echo=FALSE, include=TRUE, results= 'asis'}
+
+
+outcomes <- anat_data[,c(7:20)]
+outcomeVars = names(outcomes)
+       rm(lm2)
+lm2 <- lm(lh_parsopercularis_lgi ~  sexCoded + dxCoded + V1.Age + TBV, data=anat_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Sex", "Dx", "Age", "TBV"),
+  dv.labels = paste(outcomeVars[[9]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(anat_data, aes(x=SEX, y=lh_parsopercularis_lgi, color=SEX)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  scale_color_manual(values=c("purple","blue")) +
+  scale_fill_manual(values=c("purple","blue")) +
+  ylab('LH Pars Opercularis LGI') +
+  xlab('Sex/Gender') +
+  theme_classic()
+```
 
 
