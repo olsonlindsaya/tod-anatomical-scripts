@@ -3,7 +3,7 @@
 ### Scatter Plots of Bivariate Associations, ASD and TD together 
 
 
-```{r, scatterPlots, include=TRUE, echo=FALSE, warning=FALSE}
+
 outcomes <- anat_data[,c(7:21)]
 outcomeVars = names(outcomes)
 
@@ -91,6 +91,3 @@ for (i in seq_along(outcomeVars)) {
   #ggsave(plots,filename=paste("/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/scatterPlots/LGI/MEL_by_",outcomeVars[i],".tiff",sep=""))
 }
 
-
-
-```
