@@ -133,6 +133,32 @@ qplot(anat_data_TD$zipIncome,
      xlim=c(20000,100000))
 dev.off()
 
+mypath <- file.path("/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/histograms", "SES1_INR_hist.tiff")
+tiff(file=mypath,width = 10, height = 10, units = 'in', res = 300)
+qplot(anat_data_ASD$INR,
+      geom="histogram",
+      binwidth =  1,  
+      main = "Histogram for Income-to-Needs Ratio: ASD", 
+      xlab = "Income:Needs Ratio",  
+      fill=I("red"), 
+      col=I("black"),
+      ylim = c(0,9),
+      xlim=c(-1,11))
+dev.off()
+
+mypath <- file.path("/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/histograms", "INR_TD_hist.tiff")
+tiff(file=mypath,width = 10, height = 10, units = 'in', res = 300)
+qplot(anat_data_TD$INR,
+      geom="histogram",
+      binwidth = 1,  
+      main = "Histogram for Income-to-Needs Ratio: TD", 
+      xlab = "Income:Needs Ratio",  
+      fill=I("blue"), 
+      col=I("black"),
+      ylim = c(0,9),
+      xlim=c(-1,11))
+dev.off()
+
 
 ## Recode some Vars
 anat_data$dxCoded <- as.factor(anat_data$Dx) # 1 = ASD, 2 = TD

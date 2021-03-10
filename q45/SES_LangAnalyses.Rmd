@@ -1,0 +1,1129 @@
+---
+title: "SES Lang. Analyses"
+author: "Lindsay Olson"
+date: "3/5/2021"
+output: 
+  html_document:
+    toc: TRUE
+---
+
+```{r setup, include=FALSE}
+
+library(float)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(knitr)
+library(MBESS)
+library(dplyr)
+library(ppcor)
+library(corrplot)
+library(Hmisc)
+library(dplyr)
+library(kableExtra)
+library(pander)
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+library(tableone)
+library(dplyr)
+library(tableone)
+library(pander)
+library(furniture)
+library(knitr)
+
+
+options(digits = 4, scipen = 999)
+
+
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, error = FALSE)
+
+```
+
+
+```{r, data-readin PrepTableQ4, include=FALSE, echo=FALSE, warning=FALSE}
+
+# Read in dataset
+
+#LGI Data 
+rm(list=ls()) ## clear the workspace
+#dev.off() ## Clear the plots
+
+
+FC_data = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/FC_Data/FC_zScoresPerParticipant.csv') 
+
+FC_data$dxCoded <- as.factor(FC_data$Dx) # 1 = ASD, 2 = TD
+FC_data$dxCoded <-unclass(FC_data$dxCoded)
+ 
+FC_data$sexCoded <- as.factor(FC_data$sex) # 1 = Female, 2 = Male
+FC_data$sexCoded <-unclass(FC_data$sexCoded)
+
+FC_data$BilingualCoded <- as.factor(FC_data$Bilingual_Coded) # 0 = monolingual, 1 = bilingual
+
+LGI_data_q3 = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/SES_Anat_v2.csv')
+
+LGI_data_q3$dxCoded <- as.factor(LGI_data_q3$Dx) # 1 = ASD, 2 = TD
+LGI_data_q3$dxCoded <-unclass(LGI_data_q3$dxCoded)
+ 
+LGI_data_q3$sexCoded <- as.factor(LGI_data_q3$SEX) # 1 = Female, 2 = Male
+LGI_data_q3$sexCoded <-unclass(LGI_data_q3$sexCoded)
+
+LGI_data_q3$BilingualCoded <- as.factor(LGI_data_q3$BilingualCoded) # 0 = monolingual, 1 = bilingual
+
+
+CT_data_q3 = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/Lang_CT_SES.csv')
+
+CT_data_q3$dxCoded <- as.factor(CT_data_q3$Dx) # 1 = ASD, 2 = TD
+CT_data_q3$dxCoded <-unclass(CT_data_q3$dxCoded)
+ 
+CT_data_q3$sexCoded <- as.factor(CT_data_q3$SEX) # 1 = Female, 2 = Male
+CT_data_q3$sexCoded <-unclass(CT_data_q3$sexCoded)
+
+CT_data_q3$BilingualCoded <- as.factor(CT_data_q3$BilingualCoded) 
+
+
+SA_data_q3 = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/SA_SES.csv')
+
+SA_data_q3$dxCoded <- as.factor(SA_data_q3$Dx) # 1 = ASD, 2 = TD
+SA_data_q3$dxCoded <-unclass(SA_data_q3$dxCoded)
+ 
+SA_data_q3$sexCoded <- as.factor(SA_data_q3$SEX) # 1 = Female, 2 = Male
+SA_data_q3$sexCoded <-unclass(SA_data_q3$sexCoded)
+
+SA_data_q3$BilingualCoded <- as.factor(SA_data_q3$Bilingual_Coded) 
+
+LGI_data_q3_ASD <- subset(LGI_data_q3, LGI_data_q3$Dx == "ASD")
+LGI_data_q3_TD <- subset(LGI_data_q3, LGI_data_q3$Dx == "TD")
+
+
+```
+
+### Participant Table, Anatomical Analyses
+
+```{r, PrepareParticipantTable Q>3, include=FALSE, echo=FALSE, warning=FALSE}
+# Create a table of some chicken weight summary statistics using dplyr
+
+#library(compareGroups)
+
+rm(table_one_matrix)
+
+tableDataQ3 = CT_data_q3[,c('Dx', 'SEX', 'V1.Age', 'MEL_cat', 'INR', 'SES1', 'ExpLang_T', 'RecLang_T', 'ELC_SS', 'TBV', 'BilingualCoded')]
+
+listVars <- c("SEX", "BilingualCoded", "V1.Age", "MEL_cat", "INR", "SES1", "ExpLang_T", "RecLang_T", "ELC_SS", "TBV")
+
+catVars <- c("Dx")
+
+table1 <- CreateTableOne(vars = listVars, data =  CT_data_q3, factorVars = catVars, strata = c("Dx"))
+
+table_one_matrix <- print(table1,
+  includeNA = FALSE,
+  showAllLevels = TRUE
+)
+
+
+
+```
+
+
+```{r, PrintParticipantTable Q>3, include=TRUE, echo=FALSE, warning=FALSE}
+
+
+
+pandoc_table <- pandoc.table(table_one_matrix,
+  split.table = Inf,
+  style = "rmarkdown",
+  caption = "Participant Summary Table for Anatomical Analyses") 
+
+
+
+```
+
+
+# LGI Results
+
+### INR
+
+
+
+```{r, INR Plots and tables Q3, echo = FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+
+outcomes <- LGI_data_q3[,c(7:20)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    
+lm2 <- lm(lh_transversetemporal_lgi ~  INR + TBV, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "TBV"),
+  dv.labels = paste(outcomeVars[[7]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(LGI_data_q3, aes(x=INR, y=lh_transversetemporal_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Transverse Temporal LGI') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+
+    
+    lm2 <- lm(lh_superiortemporal_lgi ~  INR + TBV, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "TBV"),
+  dv.labels = paste(outcomeVars[[5]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(LGI_data_q3, aes(x=INR, y=lh_superiortemporal_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Superior Temporal LGI') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+    
+    rm(lm2)
+        lm2 <- lm(rh_parsopercularis_lgi ~  INR + TBV + BilingualCoded, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "TBV", "Bilingual"),
+  dv.labels = paste(outcomeVars[[10]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(LGI_data_q3, aes(x=INR, y=rh_parsopercularis_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('RH Pars Opercularis LGI') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+
+```
+
+
+> Income to needs ratio predicts lh transverse temporal and superior temporal LGI, controlling for age and TBV (no significant dx by INR interaction), and right hemisphere pars opercularis LGI, controlling for TBV, age, and bilingualism.
+
+
+
+### Dx Results
+
+
+> Diagnosis is **associated with lh pars opercularis LGI** when controlling for TBV, age, sex/gender, and bilingualism. 
+
+```{r, Dx Plots and tables Q3, echo = FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+
+
+outcomes <- LGI_data_q3[,c(7:20)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+     lm2 <- lm(lh_parsopercularis_lgi ~  dxCoded + TBV +sexCoded, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "TBV", "Sex"),
+  dv.labels = paste(outcomeVars[[9]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(LGI_data_q3, aes(x=Dx, y=lh_parsopercularis_lgi, color=Dx)) + 
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Opercularis LGI') +
+    xlab('Diagnosis') +
+    theme_classic()
+    
+
+
+```
+
+### Sex Results
+
+> Sex predicts **lh pars opercularis LGI**, controlling for TBV and dx (removed age bc it was insignificant). Boys show higher lh pars opercularis LGI than girls. 
+
+```{r, SexEffectsQ3, echo=FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+outcomes <- LGI_data_q3[,c(7:20)]
+outcomeVars = names(outcomes)
+       rm(lm2)
+lm2 <- lm(lh_parsopercularis_lgi ~  sexCoded + dxCoded + TBV, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Sex", "Dx", "TBV"),
+  dv.labels = paste(outcomeVars[[9]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(LGI_data_q3, aes(x=SEX, y=lh_parsopercularis_lgi, color=SEX)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  scale_color_manual(values=c("purple","blue")) +
+  scale_fill_manual(values=c("purple","blue")) +
+  ylab('LH Pars Opercularis LGI') +
+  xlab('Sex/Gender') +
+  theme_classic()
+```
+
+
+### Bilingualism Results
+
+```{r, Biling EffectsQ3, echo=FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+outcomes <- LGI_data_q3[,c(7:20)]
+outcomeVars = names(outcomes)
+       rm(lm2)
+lm2 <- lm(rh_parsopercularis_lgi ~  BilingualCoded + TBV + V1.Age + INR, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingual", "TBV", "Age", "INR"),
+  dv.labels = paste(outcomeVars[[10]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(LGI_data_q3, aes(group=BilingualCoded, y=rh_parsopercularis_lgi, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('RH Pars Opercularis LGI') +
+  xlab('Bilingualism') +
+  theme_classic()
+
+
+       rm(lm2)
+lm2 <- lm(rh_parstriangularis_lgi ~  BilingualCoded + TBV + V1.Age + INR, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingual", "TBV", "Age", "INR"),
+  dv.labels = paste(outcomeVars[[14]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(LGI_data_q3, aes(group=BilingualCoded, y=rh_parstriangularis_lgi, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('RH Pars Triangularis LGI') +
+  xlab('Bilingualism') +
+  theme_classic()
+
+  rm(lm2)
+lm2 <- lm(rh_transversetemporal_lgi ~  BilingualCoded + TBV + V1.Age + INR, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingual", "TBV", "Age", "INR"),
+  dv.labels = paste(outcomeVars[[8]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(LGI_data_q3, aes(group=BilingualCoded, y=rh_transversetemporal_lgi, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('RH Transverse Temporal LGI') +
+  xlab('Bilingualism') +
+  theme_classic()
+
+
+```
+
+> Exposure to more than one language is associated with higher LGI in the right hemisphere pars opercularis, pars triangularis, and transverse temporal gyrus, controlling for income:needs ratio, TBV, and age. 
+
+### Bx Results
+
+```{r, Bx Effects Q3, echo=FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+set.seed(1)
+
+n <- 14
+outcomes <- LGI_data_q3[,c(7:20)]
+outcomeVars = names(outcomes)
+
+
+
+    
+              rm(lm2)
+lm2 <- lm(lh_parsorbitalis_lgi ~  RecLang_T + dxCoded + V1.Age + RecLang_T*dxCoded, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "RecLang T", "Dx", "Age", "RL by Dx Intxn"),
+  dv.labels = paste(outcomeVars[[11]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+    ggplot(LGI_data_q3, aes(x=RecLang_T, y=lh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Orbitalis LGI') +
+    xlab('Rec. Lang. T-Score') +
+    theme_classic()
+    
+    
+          rm(lm2)
+lm2 <- lm(lh_parsorbitalis_lgi ~  RL_AE + dxCoded + V1.Age + RL_AE*dxCoded, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "RL AE", "Dx", "Age", "RL by Dx Intxn"),
+  dv.labels = paste(outcomeVars[[11]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+    ggplot(LGI_data_q3, aes(x=RL_AE, y=lh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Orbitalis LGI') +
+    xlab('Rec. Lang. AE') +
+    theme_classic()
+
+
+
+```
+
+
+
+# CT Results
+
+
+> INR is positively associated with LH middle temporal gyrus cortical thickness, controlling for age, sex, and bilingualism. Bilingualism is negatively associated with with LH middle temporal gyrus CT. Age is also negatively associated with CT in this region. 
+
+> Bilingualism associated with lower RH pars opercularis CT, controlling for INR, age, and sex. 
+
+```{r, INR Plots and tables Q3 CT, echo = FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+
+outcomes <- CT_data_q3[,c(18:32)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    
+lm2 <- lm(lh_middletemporal_CT ~  INR + V1.Age + sexCoded + BilingualCoded, data=CT_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "Age", "Sex", "Bilingualism"),
+  dv.labels = paste(outcomeVars[[1]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+    ggplot(CT_data_q3, aes(x=INR, y=lh_middletemporal_CT, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Middle Temporal CT') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+    
+    ggplot(CT_data_q3, aes(group=BilingualCoded, y=lh_middletemporal_CT, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('LH Middle Temporal LGI') +
+  xlab('Bilingualism') +
+  theme_classic()
+    
+
+
+```
+
+### Dx Results
+
+
+```{r, Dx Plots and tables Q3 CT, echo = FALSE, include=TRUE, results= 'asis'}
+rm(outcomes)
+
+outcomes <- CT_data_q3[,c(18:32)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+     lm2 <- lm(lh_parsorbitalis_CT ~  dxCoded + V1.Age, data=CT_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "Age"),
+  dv.labels = paste(outcomeVars[[5]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(CT_data_q3, aes(x=Dx, y=lh_parsorbitalis_CT, color=Dx)) + 
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Orbitalis CT') +
+    xlab('Diagnosis') +
+    theme_classic()
+    
+
+
+```
+
+
+> Dx predicts **left hemisphere pars orbitalis CT**, controlling for age and bilingualism (sex not a significant predictor).
+
+
+# SA Results
+
+
+### INR
+
+> INR is not significantly associated with SA when  controlling for other covariates. 
+
+
+
+```{r, INR Plots and tables Q3 SA, echo = FALSE, include=FALSE, eval=FALSE, results= 'asis'}
+
+rm(outcomes)
+
+outcomes <- SA_data_q3[,c(18:32)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+rm(lm2)    
+lm2 <- lm(rh_parsorbitalis_area ~  INR + TBV + V1.Age + BilingualCoded, data=SA_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "INR", "TBV", "Age", "Bilingual"),
+  dv.labels = paste(outcomeVars[[13]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(SA_data_q3, aes(x=INR, y=rh_parsorbitalis_area, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('RH Pars Orbitalis SA') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+    
+
+```
+
+
+
+
+### Neighborhood Advantage
+
+> Neighborhood advantage associated with **left hemisphere pars orbitalis SA and right hemisphere pars triangularis SA**
+
+
+```{r, SES1 Plots and tables Q3 SA, echo = FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+
+outcomes <- SA_data_q3[,c(18:31)]
+outcomeVars = names(outcomes)
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+rm(lm2)    
+lm2 <- lm(lh_parsorbitalis_area ~  SES1 + TBV + V1.Age, data=SA_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "TBV", "Age"),
+  dv.labels = paste(outcomeVars[[5]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(SA_data_q3, aes(x=SES1, y=lh_parsorbitalis_area, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Pars Orbitalis SA') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+    
+    cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+    
+  
+    
+    
+        rm(lm2)    
+lm2 <- lm(rh_parstriangularis_area ~  SES1 + TBV + V1.Age, data=SA_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "TBV", "Age"),
+  dv.labels = paste(outcomeVars[[14]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(SA_data_q3, aes(x=SES1, y=rh_parstriangularis_area, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('RH Pars Triangularis SA') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+    
+
+```
+
+
+
+
+# FC Analyses
+
+### Participant Table, FC Dataset
+
+```{r, FCPrepareParticipantTable, include=FALSE, echo=FALSE, warning=FALSE}
+# Create a table of some chicken weight summary statistics using dplyr
+
+#library(compareGroups)
+
+rm(table_one_matrix)
+
+tableDataQ3 = FC_data[,c('Dx', 'sex', 'Age', 'MEL_cat', 'INR', 'SES1', 'ExpLang_T', 'RecLang_T', 'ELC_SS', 'RMSD', 'BilingualCoded')]
+
+listVars <- c("sex", "BilingualCoded", "V1.Age", "MEL_cat", "INR", "SES1", "ExpLang_T", "RecLang_T", "ELC_SS", "RMSD")
+
+catVars <- c("Dx")
+
+table1 <- CreateTableOne(vars = listVars, data = FC_data, factorVars = catVars, strata = c("Dx"))
+
+table_one_matrix <- print(table1,
+  includeNA = FALSE,
+  showAllLevels = TRUE
+)
+
+
+
+```
+
+
+```{r, PrintParticipantTable FC, include=TRUE, echo=FALSE, warning=FALSE}
+
+
+
+pandoc_table <- pandoc.table(table_one_matrix,
+  split.table = Inf,
+  style = "rmarkdown",
+  caption = "Participant Summary Table for FC Data") 
+
+
+
+```
+
+### FC Analyses: Run 1, Run 2, and Both Runs (averaged)
+
+> ![FC Matrices (Fisher's transformed z- scores)](/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/FC_Data/compareRuns_connMatrices.jpg)
+ 
+### ASD Lang FC Matrix
+
+> ![ASD Language FC Matrix)](/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/FC_Data/ASD_LangFC.jpg)
+ 
+### TD Lang FC Matrix
+
+> ![TD Language FC Matrix)](/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/FC_Data/TD_LangFC.jpg)
+
+> There are no significant differences between diagnostic groups in FC between any regions tested at uncorrect *p* = 0.05. 
+
+
+### Bivariate Correlation Plots, ASD&TD Together
+```{r corrplots FC, include=TRUE, echo=FALSE, warning=FALSE,  fig.show='asis', fig.width=7, fig.asp=1, fig.cap='Bivariate Plot'}
+
+
+
+
+SES_FC <- rcorr(as.matrix(FC_data[,c("dxCoded","Age", "sexCoded", "MEL_cat", "INR", "SES1", "GM_T", "VR_T", "FM_T", "RecLang_T", "L.STG.R.STG", "L.STG.L.IFG", "L.STG.R.IFG", "L.STG.L.MTG", "L.STG.R.MTG", "L.STG.L.pSTS", "L.STG.R.pSTS", "R.STG.L.IFG", "R.STG.R.IFG", "R.STG.L.MTG", "R.STG.R.MTG", "R.STG.L.pSTS", "R.STG.R.pSTS", "L.IFG.R.IFG", "L.IFG.L.MTG", "L.IFG.R.MTG", "L.IFG.L.pSTS", "L.IFG.R.pSTS", "R.IFG.L.MTG", "R.IFG.R.MTG", "R.IFG.L.pSTS", "R.IFG.R.pSTS", "L.MTG.R.MTG", "L.MTG.L.pSTS", "L.MTG.R.pSTS", "R.MTG.L.pSTS", "R.MTG.R.pSTS", "L.pSTS.R.pSTS", "RMSD")], use="pairwise.complete.obs"))
+
+#mypath <- file.path("/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/FC_Data/CorrPlots/", "FC_varsCorr.tiff")
+#tiff(file=mypath,width = 10, height = 10, units = 'in', res = 300)
+corrplot(SES_FC$r, method = "color",  type = "lower", outline = T, addgrid.col = "darkgray", order="original", 
+         cl.pos = "b", tl.col = "indianred4", tl.srt = 45,
+         p.mat = SES_FC$P, sig.level = 0.05, insig = "blank",
+         tl.cex = .75, cl.cex = .75, addCoef.col = "white", number.digits = 2, number.cex = 0.5, 
+         col = colorRampPalette(c("midnightblue","white","darkred"))(100))
+#dev.off()
+```
+
+### Bivariate Correlation Plots, ASD Only
+```{r corrplots FC ASD, include=TRUE, echo=FALSE, warning=FALSE,  fig.show='asis', fig.width=7, fig.asp=1, fig.cap='Bivariate Plot'}
+
+
+
+FC_data_ASD <- subset(FC_data, FC_data$Dx == "ASD")
+
+
+SES_FC_ASD <- rcorr(as.matrix(FC_data_ASD[,c("Age", "sexCoded", "MEL_cat", "INR", "SES1", "GM_T", "VR_T", "FM_T", "RecLang_T", "ADOS.Total", "L.STG.R.STG", "L.STG.L.IFG", "L.STG.R.IFG", "L.STG.L.MTG", "L.STG.R.MTG", "L.STG.L.pSTS", "L.STG.R.pSTS", "R.STG.L.IFG", "R.STG.R.IFG", "R.STG.L.MTG", "R.STG.R.MTG", "R.STG.L.pSTS", "R.STG.R.pSTS", "L.IFG.R.IFG", "L.IFG.L.MTG", "L.IFG.R.MTG", "L.IFG.L.pSTS", "L.IFG.R.pSTS", "R.IFG.L.MTG", "R.IFG.R.MTG", "R.IFG.L.pSTS", "R.IFG.R.pSTS", "L.MTG.R.MTG", "L.MTG.L.pSTS", "L.MTG.R.pSTS", "R.MTG.L.pSTS", "R.MTG.R.pSTS", "L.pSTS.R.pSTS", "RMSD")], use="pairwise.complete.obs"))
+
+#mypath <- file.path("/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/FC_Data/CorrPlots/", "FC_varsCorr_ASD.tiff")
+#tiff(file=mypath,width = 10, height = 10, units = 'in', res = 300)
+corrplot(SES_FC_ASD$r, method = "color",  type = "lower", outline = T, addgrid.col = "darkgray", order="original", 
+         cl.pos = "b", tl.col = "indianred4", tl.srt = 45,
+         p.mat = SES_FC_ASD$P, sig.level = 0.05, insig = "blank",
+         tl.cex = .75, cl.cex = .75, addCoef.col = "white", number.digits = 2, number.cex = 0.5, 
+         col = colorRampPalette(c("midnightblue","white","darkred"))(100))
+#dev.off()
+```
+
+
+### Bivariate Correlation Plots, TD Only
+```{r corrplots FC TD, include=TRUE, echo=FALSE, warning=FALSE,  fig.show='asis', fig.width=7, fig.asp=1, fig.cap='Bivariate Plot'}
+
+
+
+FC_data_TD <- subset(FC_data, FC_data$Dx == "TD")
+
+
+SES_FC_TD <- rcorr(as.matrix(FC_data_TD[,c("Age", "sexCoded", "MEL_cat", "INR", "SES1", "GM_T", "VR_T", "FM_T", "RecLang_T", "L.STG.R.STG", "L.STG.L.IFG", "L.STG.R.IFG", "L.STG.L.MTG", "L.STG.R.MTG", "L.STG.L.pSTS", "L.STG.R.pSTS", "R.STG.L.IFG", "R.STG.R.IFG", "R.STG.L.MTG", "R.STG.R.MTG", "R.STG.L.pSTS", "R.STG.R.pSTS", "L.IFG.R.IFG", "L.IFG.L.MTG", "L.IFG.R.MTG", "L.IFG.L.pSTS", "L.IFG.R.pSTS", "R.IFG.L.MTG", "R.IFG.R.MTG", "R.IFG.L.pSTS", "R.IFG.R.pSTS", "L.MTG.R.MTG", "L.MTG.L.pSTS", "L.MTG.R.pSTS", "R.MTG.L.pSTS", "R.MTG.R.pSTS", "L.pSTS.R.pSTS", "RMSD")], use="pairwise.complete.obs"))
+
+#mypath <- file.path("/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/FC_Data/CorrPlots/", "FC_varsCorr_TD.tiff")
+#tiff(file=mypath,width = 10, height = 10, units = 'in', res = 300)
+corrplot(SES_FC_TD$r, method = "color",  type = "lower", outline = T, addgrid.col = "darkgray", order="original", 
+         cl.pos = "b", tl.col = "indianred4", tl.srt = 45,
+         p.mat = SES_FC_TD$P, sig.level = 0.05, insig = "blank",
+         tl.cex = .75, cl.cex = .75, addCoef.col = "white", number.digits = 2, number.cex = 0.5, 
+         col = colorRampPalette(c("midnightblue","white","darkred"))(100))
+#dev.off()
+```
+
+
+
+### FC Results: INR
+
+```{r, regTables FC, echo = FALSE, include=FALSE, eval = FALSE, results= 'asis'}
+
+
+set.seed(1)
+
+# number of columns in the Lung and Blood data.frames. 22,000 for you?
+n <- 28
+rm(outcomes)
+outcomes <- FC_data[,c(4:31)]
+outcomeVars = names(outcomes)
+
+
+
+## INR Models
+# run n regressions
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ FC_data$MEL_cat + FC_data$RMSD)) # change the predictors manually
+
+
+summaries <- lapply(my_lms, summary)
+
+
+
+
+```
+
+> INR predicts R-IFG-L-pSTS FC (z-scores), controlling for RMSD (not significant), dx (not significant), sex (not significant), and bilingualism (not significant) -- no significant dx by INR interaction. However, this association is no longer significant when controlling for SES1 (also not significant when controlling for INR, although they're both significant in the absence of one another)
+
+
+
+```{r, INR Plots and tables FC, echo = FALSE, include=TRUE, results= 'asis'}
+set.seed(1)
+
+# number of columns in the Lung and Blood data.frames. 22,000 for you?
+n <- 28
+rm(outcomes)
+outcomes <- FC_data[,c(4:31)]
+outcomeVars = names(outcomes)
+
+    
+rm(lm2)
+lm2 <- lm(R.IFG.L.pSTS ~  INR + sexCoded + dxCoded, data=FC_data, na.action = na.exclude)  # INR not significant when controlling for SES1 
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "Sex", "Dx"),
+  dv.labels = paste(outcomeVars[[21]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=INR, y=R.IFG.L.pSTS, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('R-IFG L-pSTS FC (z-scores)') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+
+```
+
+### FC Results: SES1 
+
+> Neighborhood advantage predicts L-pSTS-R.pSTS FC, R-MTG-L-pSTS FC, L-IFG R-IFG FC, R-STG R-pSTS FC, R-STG L-pSTS FC, R-STG L-IFG controlling for RMSD, dx, age, and bilingualism, (many of these are not sig. covars).
+
+> Neighborhood advantage predicts R-IFG-L-pSTS FC (z-scores), controlling for RMSD, dx, age, and bilingualism, although none are sig. However, this association is not significant when controlling for INR.
+
+```{r, Covar Plots and tables FC, echo = FALSE, eval=TRUE, include=TRUE, results= 'asis'}
+set.seed(1)
+
+# number of columns in the Lung and Blood data.frames. 22,000 for you?
+n <- 28
+rm(outcomes)
+outcomes <- FC_data[,c(4:31)]
+outcomeVars = names(outcomes)
+
+    
+rm(lm2)
+lm2 <- lm(L.pSTS.R.pSTS ~  SES1 + RMSD + BilingualCoded + dxCoded, data=FC_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "RMSD", "Bilingualism", "Dx"),
+  dv.labels = paste(outcomeVars[[28]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=SES1, y=L.pSTS.R.pSTS, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('L-pSTS, R-pSTS, FC (z-scores)') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+    
+    
+    rm(lm2)
+lm2 <- lm(R.MTG.L.pSTS ~  SES1 + RMSD + dxCoded +SES1*dxCoded, data=FC_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "RMSD", "Dx", "SES1 by Dx"),
+  dv.labels = paste(outcomeVars[[26]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=SES1, y=R.MTG.L.pSTS, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('R-MTG, L-pSTS, FC (z-scores)') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+    
+    rm(lm2)
+lm2 <- lm(R.IFG.L.pSTS ~  SES1+ dxCoded + BilingualCoded, data=FC_data, na.action = na.exclude)  # INR not significant when controlling for SES1 
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "Dx", "Bilingualism"),
+  dv.labels = paste(outcomeVars[[21]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=SES1, y=R.IFG.L.pSTS, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('R-IFG L-pSTS FC (z-scores)') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+    
+
+        rm(lm2)
+lm2 <- lm(L.IFG.R.IFG ~  SES1+ dxCoded + BilingualCoded, data=FC_data, na.action = na.exclude)  
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "Dx", "Bilingualism"),
+  dv.labels = paste(outcomeVars[[14]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=SES1, y=L.IFG.R.IFG, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('L-IFG R-IFG FC (z-scores)') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+    
+    
+       rm(lm2)
+lm2 <- lm(R.STG.R.pSTS ~  SES1+ dxCoded + BilingualCoded + SES1*dxCoded, data=FC_data, na.action = na.exclude)  
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "Dx", "Bilingualism", "SES by Dx"),
+  dv.labels = paste(outcomeVars[[13]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=SES1, y=R.STG.R.pSTS, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('R-STG R-pSTS FC (z-scores)') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+
+
+           rm(lm2)
+lm2 <- lm(R.STG.L.pSTS ~  SES1+ dxCoded + BilingualCoded, data=FC_data, na.action = na.exclude)  
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "Dx", "Bilingualism"),
+  dv.labels = paste(outcomeVars[[12]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=SES1, y=R.STG.L.pSTS, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('R-STG.L-pSTS FC (z-scores)') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+
+               rm(lm2)
+lm2 <- lm(R.STG.L.IFG ~  SES1+ dxCoded + BilingualCoded, data=FC_data, na.action = na.exclude)  
+cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "Dx", "Bilingualism"),
+  dv.labels = paste(outcomeVars[[8]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=SES1, y=R.STG.L.IFG, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('R-STG L-IFG FC (z-scores)') +
+    xlab('Neighborhood Advantage') +
+    theme_classic()
+
+```
+
+### FC Results: MEL
+> MEL is not a significant predictor of Lang FC when controlling for RMSD, dx, sex, and bilingualism. 
+
+
+### FC Results: Covariates
+> There is a significant age by dx interaction on L-IFG L-MTG FC 
+
+> Bilingualism predicts L-IFG L-MTG FC, controlling for age, dx, and ageXdx effects. 
+
+> Bilingualism is associated with L-IFG R-MTG FC
+
+> Sex predicts L-STG R-MTG
+
+> Dx Predicts L-STG L-IFG
+
+```{r, SES1 Plots and tables FC, echo = FALSE, eval=TRUE, include=TRUE, results= 'asis'}
+set.seed(1)
+
+# number of columns in the Lung and Blood data.frames. 22,000 for you?
+n <- 28
+rm(outcomes)
+outcomes <- FC_data[,c(4:31)]
+outcomeVars = names(outcomes)
+
+    
+rm(lm2)
+lm2 <- lm(L.IFG.L.MTG ~  BilingualCoded + Age + dxCoded + Age*dxCoded, data=FC_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingualism", "Age", "Dx", "Age by Dx"),
+  dv.labels = paste(outcomeVars[[15]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=Age, y=L.IFG.L.MTG, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('L-IFG L-MTG, FC (z-scores)') +
+    xlab('Age') +
+    theme_classic()
+    
+    
+    ggplot(na.omit(FC_data), aes(group=BilingualCoded, y=L.IFG.L.MTG, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('L-IFG L-MTG, FC (z-scores)') +
+  xlab('Bilingualism') +
+  theme_classic()
+    
+  
+    
+    rm(lm2)
+lm2 <- lm(L.IFG.R.MTG ~  BilingualCoded + RMSD + dxCoded, data=FC_data, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingualism", "RMSD", "Dx"),
+  dv.labels = paste(outcomeVars[[16]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+ ggplot(na.omit(FC_data), aes(group=BilingualCoded, y=L.IFG.R.MTG, color=BilingualCoded)) +
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+    ylab('L-IFG R-MTG, FC (z-scores)') +
+    xlab('Bilingualism') +
+    theme_classic()
+    
+    rm(lm2)
+lm2 <- lm(L.STG.R.MTG ~  sexCoded + dxCoded + BilingualCoded, data=FC_data, na.action = na.exclude)  
+cat(tab_model(lm2, pred.labels = c("Intercept", "Sex/Gender", "Dx", "Bilingualism"),
+  dv.labels = paste(outcomeVars[[5]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+
+    ggplot(FC_data, aes(x=sexCoded, y=L.STG.R.MTG, color=sex)) + 
+    geom_boxplot() +
+    theme(text = element_text(size = 20)) +
+    scale_color_manual(values=c("purple","blue")) +
+    scale_fill_manual(values=c("purple","blue")) +
+    ylab('L-STG R-MTG, FC (z-scores)') +
+    xlab('Sex/Gender') +
+    theme_classic()
+    
+
+
+```

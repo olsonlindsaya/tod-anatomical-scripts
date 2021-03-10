@@ -1,7 +1,7 @@
 ---
 title: "SES_Anat_Analyses"
 author: "Lindsay Olson"
-date: "2/11/2021"
+date: "3/5/2021"
 output: 
   html_document:
     toc: TRUE
@@ -69,6 +69,9 @@ LGI_data_q3$dxCoded <-unclass(LGI_data_q3$dxCoded)
 LGI_data_q3$sexCoded <- as.factor(LGI_data_q3$SEX) # 1 = Female, 2 = Male
 LGI_data_q3$sexCoded <-unclass(LGI_data_q3$sexCoded)
 
+LGI_data_q3$BilingualCoded <- as.factor(LGI_data_q3$BilingualCoded) # 0 = monolingual, 1 = bilingual
+#LGI_data_q3$BilingualCoded <-unclass(LGI_data_q3$BilingualCoded)
+
 
 CT_data_q3 = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/Lang_CT_SES.csv')
 
@@ -77,6 +80,8 @@ CT_data_q3$dxCoded <-unclass(CT_data_q3$dxCoded)
  
 CT_data_q3$sexCoded <- as.factor(CT_data_q3$SEX) # 1 = Female, 2 = Male
 CT_data_q3$sexCoded <-unclass(CT_data_q3$sexCoded)
+
+CT_data_q3$BilingualCoded <- as.factor(CT_data_q3$BilingualCoded) 
 
 CT_data_q4 = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/Lang_CT_SES_q45.csv')
 
@@ -96,6 +101,8 @@ SA_data_q3$dxCoded <-unclass(SA_data_q3$dxCoded)
 SA_data_q3$sexCoded <- as.factor(SA_data_q3$SEX) # 1 = Female, 2 = Male
 SA_data_q3$sexCoded <-unclass(SA_data_q3$sexCoded)
 
+SA_data_q3$BilingualCoded <- as.factor(SA_data_q3$Bilingual_Coded) 
+
 SA_data_q4 = read.csv('/Users/lolson/Documents/001_JDP/001_BDIL/006_Projects/11_ToddlerSES/todanatomicaldata/tod-anatomical-scripts/q45/SA_SES_q45.csv')
 
 
@@ -104,6 +111,9 @@ SA_data_q4$dxCoded <-unclass(SA_data_q4$dxCoded)
  
 SA_data_q4$sexCoded <- as.factor(SA_data_q4$SEX) # 1 = Female, 2 = Male
 SA_data_q4$sexCoded <-unclass(SA_data_q4$sexCoded)
+
+LGI_data_q3_ASD <- subset(LGI_data_q3, LGI_data_q3$Dx == "ASD")
+LGI_data_q3_TD <- subset(LGI_data_q3, LGI_data_q3$Dx == "TD")
 
 
 ```
@@ -378,7 +388,7 @@ outcomeVars = names(outcomes)
 
 ## INR Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$INR + LGI_data_q3$TBV +LGI_data_q3$V1.Age)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$INR + LGI_data_q3$TBV +LGI_data_q3$V1.Age + LGI_data_q3$BilingualCoded))# change the predictors manually
 
 # if you need more info, get full summary call. now you can get whatever, like:
 summaries <- lapply(my_lms, summary)
@@ -447,7 +457,7 @@ cat("\n")
 
 ```
 
-* Income to needs ratio predicts rh_parsopercularis_lgi, controlling for age and TBV (dx, sex, and age not sig. predictors), in the Q>=4 dataset.
+
 
 
 ### INR Results Q>3
@@ -467,8 +477,62 @@ cat("\n")
 cat("\n")
 
     
-lm2 <- lm(rh_parsopercularis_lgi ~  INR + TBV + V1.Age, data=LGI_data_q3, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "TBV", "Age"),
+lm2 <- lm(lh_transversetemporal_lgi ~  INR + TBV, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "TBV"),
+  dv.labels = paste(outcomeVars[[7]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(LGI_data_q3, aes(x=INR, y=lh_transversetemporal_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Transverse Temporal LGI') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+
+    
+    lm2 <- lm(lh_superiortemporal_lgi ~  INR + TBV, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "TBV"),
+  dv.labels = paste(outcomeVars[[5]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+cat("\n")
+
+    ggplot(LGI_data_q3, aes(x=INR, y=lh_superiortemporal_lgi, color=Dx, shape=Dx)) +
+    geom_point() +
+    geom_smooth(method=lm, aes(fill=Dx)) +
+    scale_color_manual(values=c("red","blue")) +
+    scale_fill_manual(values=c("red","blue")) +
+    ylab('LH Superior Temporal LGI') +
+    xlab('Income:Needs Ratio') +
+    theme_classic()
+    
+    rm(lm2)
+        lm2 <- lm(rh_parsopercularis_lgi ~  INR + TBV + BilingualCoded, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "TBV", "Bilingual"),
   dv.labels = paste(outcomeVars[[10]]),
   string.pred = "Coeffcient",
   string.ci = "CI (95%)",
@@ -495,8 +559,8 @@ cat("\n")
 
 ```
 
-* Income to needs ratio predicts **rh_parsopercularis_lgi**, controlling for age and TBV (dx, sex, and age not sig. predictors), in the Q>=3 dataset. 
 
+* Income to needs ratio predicts lh transverse temporal and superior temporal LGI, controlling for age and TBV in the Q>=3 dataset (no significant dx by INR interaction), and right hemisphere pars opercularis LGI, controlling for TBV, age, and bilingualism.
 
 
 
@@ -554,7 +618,7 @@ outcomeVars = names(outcomes)
 
 ## SES1 Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$SES1 + LGI_data_q3$TBV + LGI_data_q3$V1.Age)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$SES1 + LGI_data_q3$TBV + LGI_data_q3$V1.Age + LGI_data_q3$BilingualCoded)) # change the predictors manually
 
 
 summaries <- lapply(my_lms, summary)
@@ -798,7 +862,7 @@ outcomeVars = names(outcomes)
 
 ## SES1 Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$MEL_cat + LGI_data_q3$TBV + LGI_data_q3$V1.Age)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$MEL_cat + LGI_data_q3$TBV + LGI_data_q3$V1.Age + LGI_data_q3$BilingualCoded)) # change the predictors manually
 
 
 summaries <- lapply(my_lms, summary)
@@ -1119,7 +1183,7 @@ outcomeVars = names(outcomes)
 
 ## SES1 Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$dxCoded + LGI_data_q3$TBV + LGI_data_q3$V1.Age +LGI_data_q3$sexCoded)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$dxCoded + LGI_data_q3$TBV + LGI_data_q3$V1.Age +LGI_data_q3$sexCoded + LGI_data_q3$BilingualCoded)) # change the predictors manually
 
 
 summaries <- lapply(my_lms, summary)
@@ -1139,7 +1203,7 @@ summaries <- lapply(my_lms, summary)
 
 ### Dx Results, Q>=3
 
-+ Diagnosis **not significantly associated with LGI** in the Q>=3 dataset (after removing SES variables from the model). Including results here for comparison to the Q4 model results. 
++ Diagnosis **associated with lh pars opercularis LGI** when controlling for TBV, age, sex/gender, and bilingualism. 
 
 ```{r, Dx Plots and tables Q3, echo = FALSE, include=TRUE, results= 'asis'}
 
@@ -1154,9 +1218,9 @@ cat("\n")
 cat("\n")
 cat("\n")
 
-     lm2 <- lm(lh_parstriangularis_lgi ~  dxCoded + TBV +sexCoded, data=LGI_data_q3, na.action = na.exclude)   
+     lm2 <- lm(lh_parsopercularis_lgi ~  dxCoded + TBV +sexCoded, data=LGI_data_q3, na.action = na.exclude)   
 cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "TBV", "Sex"),
-  dv.labels = paste(outcomeVars[[13]]),
+  dv.labels = paste(outcomeVars[[9]]),
   string.pred = "Coeffcient",
   string.ci = "CI (95%)",
   string.p = "p-Value")$knitr,"\n--------\n")
@@ -1171,42 +1235,16 @@ cat("\n")
 cat("\n")
 cat("\n")
 
-    ggplot(LGI_data_q3, aes(x=Dx, y=lh_parstriangularis_lgi, color=Dx)) + 
+    ggplot(LGI_data_q3, aes(x=Dx, y=lh_parsopercularis_lgi, color=Dx)) + 
     geom_boxplot() +
     theme(text = element_text(size = 20)) +
     scale_color_manual(values=c("red","blue")) +
     scale_fill_manual(values=c("red","blue")) +
-    ylab('LH Pars Triangularis LGI') +
+    ylab('LH Pars Opercularis LGI') +
     xlab('Diagnosis') +
     theme_classic()
     
-    lm2 <- lm(rh_middletemporal_lgi ~  dxCoded + TBV, data=LGI_data_q3, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "Dx", "TBV"),
-  dv.labels = paste(outcomeVars[[4]]),
-  string.pred = "Coeffcient",
-  string.ci = "CI (95%)",
-  string.p = "p-Value")$knitr,"\n--------\n")
 
-
-cat("\n")
-cat("\n")
-cat("\n")
-cat("\n")
-cat("\n")
-cat("\n")
-cat("\n")
-cat("\n")
-
-    ggplot(LGI_data_q3, aes(x=Dx, y=rh_middletemporal_lgi, color=Dx)) + 
-    geom_boxplot() +
-    theme(text = element_text(size = 20)) +
-    scale_color_manual(values=c("red","blue")) +
-    scale_fill_manual(values=c("red","blue")) +
-    ylab('RH Middle Temporal LGI') +
-    xlab('Diagnosis') +
-    theme_classic()
-    
-    
 
 ```
 
@@ -1335,6 +1373,119 @@ ggplot(LGI_data_q3, aes(x=SEX, y=lh_parsopercularis_lgi, color=SEX)) +
   theme_classic()
 ```
 
+
+
+# LGI Results, compare results for data quality Q>=4 vs. data quality Q>=3, Regression Models: Sex/Gender
+
+
+### Bilingualism Results Q>=3
+
+
+
+
+```{r, Bilingual Models Q3, echo=FALSE, include=FALSE, eval=FALSE, results= 'asis'}
+set.seed(1)
+
+rm(outcomes)
+n <- 14
+outcomes <- LGI_data_q3[,c(7:20)]
+outcomeVars = names(outcomes)
+
+
+## SES1 Models
+# run n regressions
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$BilingualCoded + LGI_data_q3$TBV + LGI_data_q3$V1.Age +LGI_data_q3$dxCoded)) # change the predictors manually
+
+
+summaries <- lapply(my_lms, summary)
+
+  for (i in seq_along(outcomeVars)) {
+   # cat('Linear regression results predicting', outcomeVars[[i]], '\n') 
+    cat(tab_model(my_lms[i], pred.labels = c("Intercept", "Sex", "TBV", "Age", "Dx"),
+  dv.labels = paste(outcomeVars[[i]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+    
+  }
+
+
+```
+
+
+
+```{r, Biling EffectsQ3, echo=FALSE, include=TRUE, results= 'asis'}
+
+rm(outcomes)
+outcomes <- LGI_data_q3[,c(7:20)]
+outcomeVars = names(outcomes)
+       rm(lm2)
+lm2 <- lm(rh_parsopercularis_lgi ~  BilingualCoded + TBV + V1.Age + INR, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingual", "TBV", "Age", "INR"),
+  dv.labels = paste(outcomeVars[[10]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(LGI_data_q3, aes(group=BilingualCoded, y=rh_parsopercularis_lgi, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('RH Pars Opercularis LGI') +
+  xlab('Bilingualism') +
+  theme_classic()
+
+
+       rm(lm2)
+lm2 <- lm(rh_parstriangularis_lgi ~  BilingualCoded + TBV + V1.Age + INR, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingual", "TBV", "Age", "INR"),
+  dv.labels = paste(outcomeVars[[14]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(LGI_data_q3, aes(group=BilingualCoded, y=rh_parstriangularis_lgi, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('RH Pars Triangularis LGI') +
+  xlab('Bilingualism') +
+  theme_classic()
+
+  rm(lm2)
+lm2 <- lm(rh_transversetemporal_lgi ~  BilingualCoded + TBV + V1.Age + INR, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Bilingual", "TBV", "Age", "INR"),
+  dv.labels = paste(outcomeVars[[8]]),
+  string.pred = "Coeffcient",
+  string.ci = "CI (95%)",
+  string.p = "p-Value")$knitr,"\n--------\n")
+
+ggplot(LGI_data_q3, aes(group=BilingualCoded, y=rh_transversetemporal_lgi, color=BilingualCoded)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 20)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) + 
+  scale_color_manual(values=c("green","blue")) +
+  scale_fill_manual(values=c("green","blue")) +
+  ylab('RH Transverse Temporal LGI') +
+  xlab('Bilingualism') +
+  theme_classic()
+
+
+```
+
++ Exposure to more than one language is associated with higher LGI in the right hemisphere pars opercularis, pars triangularis, and transverse temporal gyrus, controlling for income:needs ratio, TBV, and age. 
+
+
 # LGI Results, Associations with Behavioral Data
 
 ### Bivariate correlations with bx data, ASD Only, Q>=4
@@ -1444,8 +1595,6 @@ summaries <- lapply(my_lms, summary)
 
 + Insignificant negative relationship between receptive language and **lh pars orbitalis LGI** that **is** significant in the Q>=3 dataset (see below). The negative effect looks to be mostly driven by the ASD group, although there is no significant RecLangXGroup interaction. 
 
-+ Expressive language predicts **rh pars opercularis LGI**, controlling for dx, TBV, and age (age not significant, and can be removed). Similar trend for left hempisphere, but not significant. 
-
 + Both expressive and receptive language predict rh and lh fusiform LGI, but not including in this summary as it's not directly related to the dissertation, but noting for later. ELC also associated with fusiform LGI.
 
 
@@ -1494,7 +1643,7 @@ cat(tab_model(lm2, pred.labels = c("Intercept", "Rec Lang", "Dx", "Age"),
     geom_smooth(method=lm, aes(fill=Dx)) +
     scale_color_manual(values=c("red","blue")) +
     scale_fill_manual(values=c("red","blue")) +
-    ylab('LH Pars Orbitalis LGI') +
+    ylab('LH Pars Opercularis LGI') +
     xlab('Rec. Lang. T-Score') +
     theme_classic()
 
@@ -1548,7 +1697,7 @@ outcomeVars = names(outcomes)
 
 ## SES1 Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$dxCoded + LGI_data_q3$ExpLang_T + LGI_data_q3$TBV)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ LGI_data_q3$dxCoded + LGI_data_q3$RecLang_T + LGI_data_q3$TBV)) # change the predictors manually
 
 
 summaries <- lapply(my_lms, summary)
@@ -1581,36 +1730,14 @@ outcomeVars = names(outcomes)
 
 
 
-
-       rm(lm2)
-lm2 <- lm(rh_parsopercularis_lgi ~  RecLang_T + dxCoded + V1.Age, data=LGI_data_q3, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "Rec Lang", "Dx", "Age"),
-  dv.labels = paste(outcomeVars[[10]]),
-  string.pred = "Coeffcient",
-  string.ci = "CI (95%)",
-  string.p = "p-Value")$knitr,"\n--------\n")
-
-
-
-    ggplot(LGI_data_q3, aes(x=RecLang_T, y=rh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
-    geom_point() +
-    geom_smooth(method=lm, aes(fill=Dx)) +
-    scale_color_manual(values=c("red","blue")) +
-    scale_fill_manual(values=c("red","blue")) +
-    ylab('RH Pars Orbitalis LGI') +
-    xlab('Rec. Lang. T-Score') +
-    theme_classic()
     
-    
-          rm(lm2)
+              rm(lm2)
 lm2 <- lm(lh_parsorbitalis_lgi ~  RecLang_T + dxCoded + V1.Age + RecLang_T*dxCoded, data=LGI_data_q3, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "Rec Lang", "Dx", "Age", "RL by Dx Intxn"),
+cat(tab_model(lm2, pred.labels = c("Intercept", "RecLang T", "Dx", "Age", "RL by Dx Intxn"),
   dv.labels = paste(outcomeVars[[11]]),
   string.pred = "Coeffcient",
   string.ci = "CI (95%)",
   string.p = "p-Value")$knitr,"\n--------\n")
-
-
 
     ggplot(LGI_data_q3, aes(x=RecLang_T, y=lh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
     geom_point() +
@@ -1620,26 +1747,26 @@ cat(tab_model(lm2, pred.labels = c("Intercept", "Rec Lang", "Dx", "Age", "RL by 
     ylab('LH Pars Orbitalis LGI') +
     xlab('Rec. Lang. T-Score') +
     theme_classic()
-
     
-       rm(lm2)
-lm2 <- lm(rh_parsopercularis_lgi ~  ExpLang_T + dxCoded, data=LGI_data_q3, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "Exp Lang", "Dx"),
-  dv.labels = paste(outcomeVars[[10]]),
+    
+          rm(lm2)
+lm2 <- lm(lh_parsorbitalis_lgi ~  RL_AE + dxCoded + V1.Age + RL_AE*dxCoded, data=LGI_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "RL AE", "Dx", "Age", "RL by Dx Intxn"),
+  dv.labels = paste(outcomeVars[[11]]),
   string.pred = "Coeffcient",
   string.ci = "CI (95%)",
   string.p = "p-Value")$knitr,"\n--------\n")
 
-
-
-    ggplot(LGI_data_q3, aes(x=ExpLang_T, y=rh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
+    ggplot(LGI_data_q3, aes(x=RL_AE, y=lh_parsorbitalis_lgi, color=Dx, shape=Dx)) +
     geom_point() +
     geom_smooth(method=lm, aes(fill=Dx)) +
     scale_color_manual(values=c("red","blue")) +
     scale_fill_manual(values=c("red","blue")) +
-    ylab('RH Pars Orbitalis LGI') +
-    xlab('Rec. Lang. T-Score') +
+    ylab('LH Pars Orbitalis LGI') +
+    xlab('Rec. Lang. AE') +
     theme_classic()
+
+
 
 ```
 
@@ -1832,7 +1959,7 @@ outcomeVars = names(outcomes)
 
 ## INR Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$INR +CT_data_q3$V1.Age + CT_data_q3$sexCoded)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$INR +CT_data_q3$V1.Age + CT_data_q3$sexCoded + CT_data_q3$BilingualCoded)) # change the predictors manually
 
 # if you need more info, get full summary call. now you can get whatever, like:
 summaries <- lapply(my_lms, summary)
@@ -1854,6 +1981,11 @@ summaries <- lapply(my_lms, summary)
 
 
 ```
+
+* INR is positively associated with LH middle temporal gyrus cortical thickness, controlling for age, sex, and bilingualism. Bilingualism is negatively associated with with LH middle temporal gyrus CT. Age is also negatively associated with CT in this region. 
+
+
+* Bilingualism associated with lower RH pars opercularis CT, controlling for INR, age, and sex. 
 
 
 ### INR Results Q>=4
@@ -1923,9 +2055,9 @@ cat("\n")
 cat("\n")
 
     
-lm2 <- lm(rh_parstriangularis_CT ~  INR + V1.Age + sexCoded, data=CT_data_q3, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "Age", "Sex"),
-  dv.labels = paste(outcomeVars[[14]]),
+lm2 <- lm(lh_middletemporal_CT ~  INR + V1.Age + sexCoded + BilingualCoded, data=CT_data_q3, na.action = na.exclude)   
+cat(tab_model(lm2, pred.labels = c("Intercept", "Income:Needs", "Age", "Sex", "Bilingualism"),
+  dv.labels = paste(outcomeVars[[1]]),
   string.pred = "Coeffcient",
   string.ci = "CI (95%)",
   string.p = "p-Value")$knitr,"\n--------\n")
@@ -2078,7 +2210,7 @@ outcomeVars = names(outcomes)
 
 ## SES1 Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$SES1 + CT_data_q3$sexCoded +CT_data_q3$V1.Age)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$SES1 + CT_data_q3$sexCoded +CT_data_q3$V1.Age +CT_data_q3$BilingualCoded)) # change the predictors manually
 
 # if you need more info, get full summary call. now you can get whatever, like:
 summaries <- lapply(my_lms, summary)
@@ -2442,7 +2574,7 @@ outcomeVars = names(outcomes)
 
 ## MEL Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$MEL_cat + CT_data_q3$sexCoded +CT_data_q3$V1.Age)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$MEL_cat + CT_data_q3$sexCoded +CT_data_q3$V1.Age +CT_data_q3$BilingualCoded)) # change the predictors manually
 
 # if you need more info, get full summary call. now you can get whatever, like:
 summaries <- lapply(my_lms, summary)
@@ -2685,7 +2817,7 @@ outcomeVars = names(outcomes)
 
 ## MEL Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$dxCoded + CT_data_q3$sexCoded +CT_data_q3$V1.Age)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ CT_data_q3$dxCoded + CT_data_q3$sexCoded +CT_data_q3$V1.Age +CT_data_q3$BilingualCoded)) # change the predictors manually
 
 # if you need more info, get full summary call. now you can get whatever, like:
 summaries <- lapply(my_lms, summary)
@@ -3186,7 +3318,7 @@ outcomeVars = names(outcomes)
 
 ## MEL Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ SA_data_q3$INR + SA_data_q3$sexCoded +SA_data_q3$V1.Age +SA_data_q3$TBV)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ SA_data_q3$INR + SA_data_q3$sexCoded +SA_data_q3$V1.Age +SA_data_q3$TBV +SA_data_q3$Bilingual_Coded)) # change the predictors manually
 
 # if you need more info, get full summary call. now you can get whatever, like:
 summaries <- lapply(my_lms, summary)
@@ -3412,7 +3544,7 @@ outcomeVars = names(outcomes)
 
 ## MEL Models
 # run n regressions
-my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ SA_data_q3$SES1 + SA_data_q3$V1.Age + SA_data_q3$TBV)) # change the predictors manually
+my_lms <- lapply(1:n, function(x) lm(outcomes[,x] ~ SA_data_q3$SES1 + SA_data_q3$V1.Age + SA_data_q3$TBV + SA_data_q3$Bilingual_Coded)) # change the predictors manually
 
 # if you need more info, get full summary call. now you can get whatever, like:
 summaries <- lapply(my_lms, summary)
@@ -3435,7 +3567,9 @@ summaries <- lapply(my_lms, summary)
 
 ```
 
-+ Neighborhood advantage associated with **left hemisphere pars opercularis and pars orbitalis SA, as in the Q>=4 dataset, as well as right hemisphere pars triangularis SA (not significant in the Q>=4 dataset**
++ Neighborhood advantage associated with **left hemisphere pars orbitalis SA, as in the Q>=4 dataset,** not significantly associated with  pars opercularis SA in this dataset. 
+
++ Neighborhood advantage is also associated with *as well as* **right hemisphere pars triangularis SA** (not significant in the Q>=4 dataset
 
 
 ```{r, SES1 Plots and tables Q3 SA, echo = FALSE, include=TRUE, results= 'asis'}
@@ -3707,7 +3841,7 @@ cat("\n")
 
 rm(lm2)    
 lm2 <- lm(lh_parsorbitalis_area ~  zipIncome + TBV + V1.Age, data=SA_data_q4, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "TBV", "Age"),
+cat(tab_model(lm2, pred.labels = c("Intercept", "Zip-Income", "TBV", "Age"),
   dv.labels = paste(outcomeVars[[5]]),
   string.pred = "Coeffcient",
   string.ci = "CI (95%)",
@@ -3738,7 +3872,7 @@ cat("\n")
 ```
 
 
-### Zip-Income Results, Q>=4
+### Zip-Income Results, Q>=3
 ```{r, regTables ZipIncome Q3 SA, echo = FALSE, include=FALSE, eval = FALSE, results= 'asis'}
 
 
@@ -3781,7 +3915,7 @@ summaries <- lapply(my_lms, summary)
 
 ```
 
-+ Zip-Income is negatively associated with **rh pars traingularis SA** in the Q>=3 dataset. 
++ Zip-Income is **not associated** with rh pars triangularis SA in the Q>=3 dataset. 
 
 
 ```{r, ZipIncome Plots and tables Q3 SA, echo = FALSE, include=TRUE, results= 'asis'}
@@ -3798,7 +3932,7 @@ cat("\n")
 
 rm(lm2)    
 lm2 <- lm(lh_parstriangularis_area ~  zipIncome + TBV + V1.Age, data=SA_data_q3, na.action = na.exclude)   
-cat(tab_model(lm2, pred.labels = c("Intercept", "SES1", "TBV", "Age"),
+cat(tab_model(lm2, pred.labels = c("Intercept", "Zip-Income", "TBV", "Age"),
   dv.labels = paste(outcomeVars[[14]]),
   string.pred = "Coeffcient",
   string.ci = "CI (95%)",
